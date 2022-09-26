@@ -39,10 +39,10 @@ if census is not None:
     if bosscontribution > 0:
 
         join = pd.merge(Zip_to_County[['Zip', 'county', 'State Key']], Premium_Data[['county','rate']], on = 'county', how = 'inner')
-        join = pd.merge(join, censusdf[['Employee ID', 'Date of Birth', 'Zip', 'Salary']], on = 'Zip', how = 'inner')
+        join = pd.merge(join, censusdf[['Name', 'DOB', 'Zip', 'Salary']], on = 'Zip', how = 'inner')
     
         for i in join.index:
-            age = calculateAge(join['Date of Birth'][i])
+            age = calculateAge(join['DOB'][i])
             join['State Key'][i] = join['State Key'][i]+str(age)
         
         join = pd.merge(join, Age_Curve[['State Key', 'Value']], on = 'State Key', how = 'inner')
