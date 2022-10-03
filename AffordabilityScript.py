@@ -39,7 +39,7 @@ if census is not None:
     if bosscontribution > 0:
 
         join = pd.merge(Zip_to_County[['Zip Code', 'county', 'State Key']], Premium_Data[['county','rate']], on = 'county', how = 'inner')
-        join = pd.merge(join, censusdf[['Name', 'DOB', 'Zip Code', 'Salary']], on = 'Zip Code', how = 'inner')
+        join = pd.merge(join, censusdf[['First Name','Last Name', 'DOB', 'Zip Code', 'Salary']], on = 'Zip Code', how = 'inner')
     
         for i in join.index:
             age = calculateAge(join['DOB'][i])
@@ -50,25 +50,23 @@ if census is not None:
 
         join['Increase'] = " "
 
-        #st.write(join)
+
         for i in join.index:
-            #st.write(i)
+
             if(choice == 'Age Adjusted'):
                 employercontribution = bosscontribution * join['Value'][i]
             else:
                 employercontribution = bosscontribution
-            #st.write('Employer Contribution: ',employercontribution)
+
             premium = round (join['rate'][i] * join['Value'][i], 3)
-            #st.write('Premium: ', premium)
+
             Employee_Contribution = premium - employercontribution
-            #st.write('Employee Contribution: ', Employee_Contribution)
+ 
             Affordability_Threshold = (int(join['Salary'][i]) / 12) * 0.0961
-            #st.write('Affordability Threshold: ',Affordability_Threshold)
-            #st.write('Salary: ', join['Salary'][i]/12)
+
             
             join['Increase'][i] = (premium - (Affordability_Threshold + employercontribution)) / employercontribution 
 
-            #st.write(unaffordable)
 
             if(Employee_Contribution <= Affordability_Threshold):
                 affordable += 1
@@ -76,14 +74,9 @@ if census is not None:
             else:
                 unaffordable = unaffordable.append(join.iloc[i])
 
-            #st.write((premium - (Affordability_Threshold + employercontribution)) / employercontribution)
         join = join.sort_values(by = 'Increase')
         join = join.reset_index()
         
-        #st.write(unaffordable)
-
-        
-        #st.write(increase_index)
 
         employercontribution = bosscontribution
     
@@ -91,9 +84,6 @@ if census is not None:
 
         final_affordability = round(affordable/count, 2) * 100
 
-        
-        #st.write(len(join.index))
-        #st.write(affordable, count, final_affordability)
 
         if(final_affordability == 100):
 
@@ -104,7 +94,7 @@ if census is not None:
             increase_index = len(join.index) - 1
             percent_increase = round(join['Increase'][increase_index], 4) 
 
-            st.write('Your contribution is considered Affordable with ',final_affordability,'% of your employees having an affordable contribution. An increase of ', percent_increase * 100, '% is required to have an 100% affordable contribution.')
+            st.write('Your contribution is considered Affordable with ',final_affordability,'% of your employees having an affordable contribution. An increase of ', percent_increase * 100, '% is required to have an 100% affordable contribution.  This equates to a contribution of ', round(bosscontribution+(bosscontribution * percent_increase)), 'for a single, 21 year old employee.')
 
             st.download_button(
                 label = "Download data of Unaffordable Employees",
