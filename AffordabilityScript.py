@@ -39,16 +39,21 @@ if census is not None:
     if bosscontribution > 0:
 
         join = pd.merge(Zip_to_County[['Zip Code', 'county', 'State Key']], Premium_Data[['county','rate']], on = 'county', how = 'inner')
-        join = pd.merge(join, censusdf[['First Name','Last Name', 'DOB', 'Zip Code', 'Salary']], on = 'Zip Code', how = 'inner')
+        #join = pd.merge(join, censusdf[['First Name','Last Name', 'DOB', 'Zip Code', 'Salary']], on = 'Zip Code', how = 'inner')
+        join = pd.merge(censusdf[['First Name','Last Name', 'DOB', 'Zip Code', 'Salary']], join, on = 'Zip Code', how = 'inner')
+        #st.write(join.reset_index())
     
         for i in join.index:
             age = calculateAge(join['DOB'][i])
             join['State Key'][i] = join['State Key'][i]+str(age)
         
         join = pd.merge(join, Age_Curve[['State Key', 'Value']], on = 'State Key', how = 'inner')
+        #st.write(join)
+        join = join.drop_duplicates(subset=['First Name', 'Last Name', 'DOB'], ignore_index=True)
 
 
         join['Increase'] = " "
+        #st.write(join)
 
 
         for i in join.index:
@@ -80,9 +85,10 @@ if census is not None:
 
         employercontribution = bosscontribution
     
-        count = join.index[i] + 1
+        count = join.index[i]+1
 
-        final_affordability = round(affordable/count, 2) * 100
+        #st.write(count)
+        final_affordability = (affordable/count) * 100
 
 
         if(final_affordability == 100):
