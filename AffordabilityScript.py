@@ -1,5 +1,4 @@
 from tabnanny import check
-from tabnanny import check
 from typing import final
 import streamlit as st
 import pandas as pd
@@ -13,7 +12,7 @@ st.subheader("Upload Census Here:")
 census = st.file_uploader("Upload Census:")
 
 def calculateAge(birthDate):
-    today = date.today()
+    today = date(2023, 1, 1)
     birthDate = birthDate.split("/")
     birthDate = list(map(int, birthDate))
     age = today.year - birthDate[2] - ((today.month, today.day) < (birthDate[0], birthDate[1]))
@@ -55,7 +54,7 @@ if census is not None:
         #st.write(join)
         #join = join.drop_duplicates(subset=['First Name', 'Last Name', 'DOB', 'Zip Code', 'Salary', 'county', 'State Key', 'rate' ], ignore_index=True)
 
-        #st.write(join)
+        st.write(join)
 
 
         join['Increase'] = " "
@@ -117,7 +116,7 @@ if census is not None:
             st.download_button(
                 label = "Download data of Unaffordable Employees",
                 data = convert_df(unaffordable),
-                file_name = 'DBS_FSA.csv',
+                file_name = 'unaffordable.csv',
                 mime='text'
             )
         else:
