@@ -23,7 +23,26 @@ def convert_df(df):
 
 if census is not None:
 
+    contributionTableDF = None
+
     choice = st.radio('Choose One', ['Age Adjusted', 'Flat', 'Custom'])
+
+    if choice == 'Custom':
+        st.subheader("Upload Contribution Table Here:")
+        contributionTable = st.file_uploader("Upload Contribution Table:")
+
+        if contributionTable is not None:
+            contributionTableDF = pd.read_csv(contributionTable)
+            contributionTableDF['Contribution'] = contributionTableDF['Contribution'].str.replace('$', '')
+            contributionTableDF['Contribution'] = contributionTableDF['Contribution'].astype(float)
+        
+        if contributionTable is None:
+            st.warning("Please upload a contribution table to continue.")
+            st.stop()  # Stop the script until a contribution table is uploaded
+        
+        #st.write(contributionTableDF)
+
+    #st.write(contributionTableDF[contributionTableDF['Age'] == '15']['Contribution'].values[0])
 
     percent_increase_df = pd.DataFrame()
     censusdf = pd.read_csv(census)
@@ -33,12 +52,14 @@ if census is not None:
 
     affordable = 0
     unaffordable = pd.DataFrame()
+    bosscontribution = 0
 
-    st.write(censusdf)
+    #st.write(censusdf)
 
-    bosscontribution = st.number_input('Input Employer Contribution (21/Single): ')
+    if choice == 'Age Adjusted' or choice == 'Flat':
+        bosscontribution = st.number_input('Input Employer Contribution (21/Single): ')
 
-    if bosscontribution > 0:
+    if choice == 'Custom':
         Zip_to_County = Zip_to_County.drop_duplicates(subset = ['Zip Code'], ignore_index= True)
 
         join = pd.merge(Zip_to_County[['Zip Code', 'FIPS', 'State Key']], Premium_Data[['FIPS','LCSPP21']], on = 'FIPS', how = 'inner')
@@ -75,30 +96,15 @@ if census is not None:
                 employercontribution = bosscontribution * join['Value'][i]
             elif(choice == 'Flat'):
                 employercontribution = bosscontribution
-            elif(choice == 'Custom'):
+            elif(choice == 'Custom' and contributionTableDF is not None):
                 age = calculateAge(join['DOB'][i])
-                if(age <= 44):
-                    employercontribution = 262
-                elif(age >= 45 and age <47):
-                    employercontribution = 273
-                elif(age >= 47 and age <50):
-                    employercontribution = 308
-                elif(age == 50):
-                    employercontribution = 326
-                elif(age > 50 and age < 54):
-                    employercontribution = 382
-                elif(age == 54):
-                    employercontribution = 391
-                elif(age >=55 and age < 58):
-                    employercontribution = 503
-                elif(age >= 58 and age < 60):
-                    employercontribution = 638
-                elif(age >= 60 and age < 63):
-                    employercontribution = 680
-                elif(age >= 63 and age <65):
-                    employercontribution = 700
-                elif(age >= 65):
-                    employercontribution = 786
+                if age <= 14:
+                    employercontribution = contributionTableDF[contributionTableDF['Age'] == '0-14']['Contribution'].values[0]
+                elif 15 <= age <= 63:
+                    age_str = str(age)
+                    employercontribution = contributionTableDF[contributionTableDF['Age'] == age_str]['Contribution'].values[0]
+                if age >= 64:
+                    employercontribution = contributionTableDF[contributionTableDF['Age'] == '0-14']['Contribution'].values[0]
 
 
             premium = round (join['LCSPP21'][i] * join['Value'][i], 3)
@@ -119,7 +125,7 @@ if census is not None:
 
         join = join.sort_values(by = 'Increase')
         join = join.reset_index()
-        st.write(join)
+        #st.write(join)
         
 
         employercontribution = bosscontribution
