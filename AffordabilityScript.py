@@ -111,7 +111,7 @@ if census is not None:
 
             Employee_Contribution = premium - employercontribution
  
-            Affordability_Threshold = (int(join['Salary'][i]) / 12) * 0.0912
+            Affordability_Threshold = (int(join['Salary'][i]) / 12) * 0.0839
 
             
             join['Increase'][i] = (premium - (Affordability_Threshold + employercontribution)) / employercontribution 
