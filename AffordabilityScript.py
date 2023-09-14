@@ -120,8 +120,8 @@ if census is not None:
             if(Employee_Contribution <= Affordability_Threshold):
                 affordable += 1
 
-            else:
-                unaffordable = unaffordable.append(join.iloc[i])
+            #else:
+               # unaffordable = unaffordable.append(join.iloc[i])
 
         join = join.sort_values(by = 'Increase')
         join = join.reset_index()
