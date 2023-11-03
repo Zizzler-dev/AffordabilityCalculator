@@ -116,7 +116,7 @@ if census is not None:
                 affordable += 1
 
             else:
-                unaffordable = unaffordable.append(join.iloc[i])
+                unaffordable = unaffordable.concat(join.iloc[i])
                 unaffordableCount += 1
 
         join = join.sort_values(by = 'Increase')
