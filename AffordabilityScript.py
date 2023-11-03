@@ -116,7 +116,7 @@ if census is not None:
                 affordable += 1
 
             else:
-                unaffordable = unaffordable.concat(join.iloc[i])
+                unaffordable = pd.concat([unaffordable, join.iloc[[i]]])
                 unaffordableCount += 1
 
         join = join.sort_values(by = 'Increase')
