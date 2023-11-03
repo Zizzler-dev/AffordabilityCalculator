@@ -23,26 +23,7 @@ def convert_df(df):
 
 if census is not None:
 
-    contributionTableDF = None
-
     choice = st.radio('Choose One', ['Age Adjusted', 'Flat', 'Custom'])
-
-    if choice == 'Custom':
-        st.subheader("Upload Contribution Table Here:")
-        contributionTable = st.file_uploader("Upload Contribution Table:")
-
-        if contributionTable is not None:
-            contributionTableDF = pd.read_csv(contributionTable)
-            contributionTableDF['Contribution'] = contributionTableDF['Contribution'].str.replace('$', '')
-            contributionTableDF['Contribution'] = contributionTableDF['Contribution'].astype(float)
-        
-        if contributionTable is None:
-            st.warning("Please upload a contribution table to continue.")
-            st.stop()  # Stop the script until a contribution table is uploaded
-        
-        #st.write(contributionTableDF)
-
-    #st.write(contributionTableDF[contributionTableDF['Age'] == '15']['Contribution'].values[0])
 
     percent_increase_df = pd.DataFrame()
     censusdf = pd.read_csv(census)
@@ -51,15 +32,14 @@ if census is not None:
     Age_Curve = pd.read_csv('Age Curve.csv')
 
     affordable = 0
+    unaffordableCount = 0
     unaffordable = pd.DataFrame()
-    bosscontribution = 0
 
     #st.write(censusdf)
 
-    if choice == 'Age Adjusted' or choice == 'Flat':
-        bosscontribution = st.number_input('Input Employer Contribution (21/Single): ')
+    bosscontribution = st.number_input('Input Employer Contribution (21/Single): ')
 
-    if choice == 'Custom':
+    if bosscontribution > 0:
         Zip_to_County = Zip_to_County.drop_duplicates(subset = ['Zip Code'], ignore_index= True)
 
         join = pd.merge(Zip_to_County[['Zip Code', 'FIPS', 'State Key']], Premium_Data[['FIPS','LCSPP21']], on = 'FIPS', how = 'inner')
@@ -88,23 +68,38 @@ if census is not None:
         for i in join.index:
             
 
-            if(join['Salary'][i] < 13590):
-                join['Salary'][i] = 13590
+            if(join['Salary'][i] < 14580):
+                join['Salary'][i] = 14580
 
 
             if(choice == 'Age Adjusted'):
                 employercontribution = bosscontribution * join['Value'][i]
             elif(choice == 'Flat'):
                 employercontribution = bosscontribution
-            elif(choice == 'Custom' and contributionTableDF is not None):
+            elif(choice == 'Custom'):
                 age = calculateAge(join['DOB'][i])
-                if age <= 14:
-                    employercontribution = contributionTableDF[contributionTableDF['Age'] == '0-14']['Contribution'].values[0]
-                elif 15 <= age <= 63:
-                    age_str = str(age)
-                    employercontribution = contributionTableDF[contributionTableDF['Age'] == age_str]['Contribution'].values[0]
-                if age >= 64:
-                    employercontribution = contributionTableDF[contributionTableDF['Age'] == '0-14']['Contribution'].values[0]
+                if(age <= 44):
+                    employercontribution = 262
+                elif(age >= 45 and age <47):
+                    employercontribution = 273
+                elif(age >= 47 and age <50):
+                    employercontribution = 308
+                elif(age == 50):
+                    employercontribution = 326
+                elif(age > 50 and age < 54):
+                    employercontribution = 382
+                elif(age == 54):
+                    employercontribution = 391
+                elif(age >=55 and age < 58):
+                    employercontribution = 503
+                elif(age >= 58 and age < 60):
+                    employercontribution = 638
+                elif(age >= 60 and age < 63):
+                    employercontribution = 680
+                elif(age >= 63 and age <65):
+                    employercontribution = 700
+                elif(age >= 65):
+                    employercontribution = 786
 
 
             premium = round (join['LCSPP21'][i] * join['Value'][i], 3)
@@ -120,8 +115,9 @@ if census is not None:
             if(Employee_Contribution <= Affordability_Threshold):
                 affordable += 1
 
-            #else:
-               # unaffordable = unaffordable.append(join.iloc[i])
+            else:
+                unaffordable = unaffordable.append(join.iloc[i])
+                unaffordableCount += 1
 
         join = join.sort_values(by = 'Increase')
         join = join.reset_index()
@@ -140,25 +136,9 @@ if census is not None:
 
             st.write('Your contribution is considered Affordable with ',final_affordability,'% of your employees having an affordable contribution.')
 
-        elif(final_affordability >= 95):
-
-            increase_index = len(join.index) - 1
-            percent_increase = round(join['Increase'][increase_index], 4) 
-
-            st.write('Your contribution is considered Affordable with ',final_affordability,'% of your employees having an affordable contribution. An increase of ', percent_increase * 100, '% is required to have an 100% affordable contribution.  This equates to a contribution of ', round(bosscontribution+(bosscontribution * percent_increase)), 'for a single, 21 year old employee.')
-
-            st.download_button(
-                label = "Download data of Unaffordable Employees",
-                data = convert_df(unaffordable),
-                file_name = 'unaffordable.csv',
-                mime='text'
-            )
         else:
 
-            increase_index = round((len(join.index)) * 0.95)
-            percent_increase = round(join['Increase'][increase_index-1], 4)
-
-            st.write('Your contribution is considered Unaffordable with ',final_affordability,'% of your employees having an affordable contribution. An increase of ', percent_increase * 100, '% is required to have an 95% affordable contribution. This equates to a contribution of ', round(bosscontribution+(bosscontribution * percent_increase)), 'for a single, 21 year old employee.')
+            st.write('Your contribution is considered Unaffordable with ',final_affordability,'% of your employees having an affordable contribution. You are suceptable to a fine of $', 4460 * unaffordableCount)
             st.download_button(
                 label = "Download data of Unaffordable Employees",
                 data = convert_df(unaffordable),
