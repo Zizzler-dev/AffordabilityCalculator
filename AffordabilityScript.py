@@ -46,6 +46,7 @@ if census is not None:
 
     affordable = 0
     unaffordableCount = 0
+    bosscontribution = 0
     unaffordable = pd.DataFrame()
 
     #st.write(censusdf)
