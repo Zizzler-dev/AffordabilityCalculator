@@ -53,7 +53,7 @@ if census is not None:
     if choice is not 'Custom':
         bosscontribution = st.number_input('Input Employer Contribution (21/Single): ')
 
-    if bosscontribution > 0:
+    if bosscontribution > 0 or choice == 'Custom':
         Zip_to_County = Zip_to_County.drop_duplicates(subset = ['Zip Code'], ignore_index= True)
 
         join = pd.merge(Zip_to_County[['Zip Code', 'FIPS', 'State Key']], Premium_Data[['FIPS','LCSPP21']], on = 'FIPS', how = 'inner')
