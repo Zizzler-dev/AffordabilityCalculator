@@ -76,30 +76,18 @@ if census is not None:
                 employercontribution = bosscontribution * join['Value'][i]
             elif(choice == 'Flat'):
                 employercontribution = bosscontribution
-            elif(choice == 'Custom'):
-                age = calculateAge(join['DOB'][i])
-                if(age <= 44):
-                    employercontribution = 262
-                elif(age >= 45 and age <47):
-                    employercontribution = 273
-                elif(age >= 47 and age <50):
-                    employercontribution = 308
-                elif(age == 50):
-                    employercontribution = 326
-                elif(age > 50 and age < 54):
-                    employercontribution = 382
-                elif(age == 54):
-                    employercontribution = 391
-                elif(age >=55 and age < 58):
-                    employercontribution = 503
-                elif(age >= 58 and age < 60):
-                    employercontribution = 638
-                elif(age >= 60 and age < 63):
-                    employercontribution = 680
-                elif(age >= 63 and age <65):
-                    employercontribution = 700
-                elif(age >= 65):
-                    employercontribution = 786
+            if choice == 'Custom':
+                st.subheader("Upload Contribution Table Here:")
+                contributionTable = st.file_uploader("Upload Contribution Table:")
+        
+                if contributionTable is not None:
+                    contributionTableDF = pd.read_csv(contributionTable)
+                    contributionTableDF['Contribution'] = contributionTableDF['Contribution'].str.replace('$', '')
+                    contributionTableDF['Contribution'] = contributionTableDF['Contribution'].astype(float)
+        
+                if contributionTable is None:
+                    st.warning("Please upload a contribution table to continue.")
+                    st.stop()  # Stop the script until a contribution table is uploaded
 
 
             premium = round (join['LCSPP21'][i] * join['Value'][i], 3)
