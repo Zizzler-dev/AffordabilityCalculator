@@ -25,6 +25,19 @@ if census is not None:
 
     choice = st.radio('Choose One', ['Age Adjusted', 'Flat', 'Custom'])
 
+    if choice == 'Custom':
+        st.subheader("Upload Contribution Table Here:")
+        contributionTable = st.file_uploader("Upload Contribution Table:")
+
+        if contributionTable is not None:
+            contributionTableDF = pd.read_csv(contributionTable)
+            contributionTableDF['Contribution'] = contributionTableDF['Contribution'].str.replace('$', '')
+            contributionTableDF['Contribution'] = contributionTableDF['Contribution'].astype(float)
+        
+        if contributionTable is None:
+            st.warning("Please upload a contribution table to continue.")
+            st.stop()  # Stop the script until a contribution table is uploaded
+
     percent_increase_df = pd.DataFrame()
     censusdf = pd.read_csv(census)
     Premium_Data = pd.read_csv('LCSPP_21_single.csv')
@@ -76,18 +89,15 @@ if census is not None:
                 employercontribution = bosscontribution * join['Value'][i]
             elif(choice == 'Flat'):
                 employercontribution = bosscontribution
-            if choice == 'Custom':
-                st.subheader("Upload Contribution Table Here:")
-                contributionTable = st.file_uploader("Upload Contribution Table:")
-        
-                if contributionTable is not None:
-                    contributionTableDF = pd.read_csv(contributionTable)
-                    contributionTableDF['Contribution'] = contributionTableDF['Contribution'].str.replace('$', '')
-                    contributionTableDF['Contribution'] = contributionTableDF['Contribution'].astype(float)
-        
-                if contributionTable is None:
-                    st.warning("Please upload a contribution table to continue.")
-                    st.stop()  # Stop the script until a contribution table is uploaded
+            elif(choice == 'Custom' and contributionTableDF is not None):
+                age = calculateAge(join['DOB'][i])
+                if age <= 14:
+                    employercontribution = contributionTableDF[contributionTableDF['Age'] == '0-14']['Contribution'].values[0]
+                elif 15 <= age <= 63:
+                    age_str = str(age)
+                    employercontribution = contributionTableDF[contributionTableDF['Age'] == age_str]['Contribution'].values[0]
+                if age >= 64:
+                    employercontribution = contributionTableDF[contributionTableDF['Age'] == '0-14']['Contribution'].values[0]
 
 
             premium = round (join['LCSPP21'][i] * join['Value'][i], 3)
@@ -109,7 +119,6 @@ if census is not None:
 
         join = join.sort_values(by = 'Increase')
         join = join.reset_index()
-        #st.write(join)
         
 
         employercontribution = bosscontribution
