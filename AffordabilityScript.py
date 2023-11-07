@@ -49,8 +49,8 @@ if census is not None:
     unaffordable = pd.DataFrame()
 
     #st.write(censusdf)
-
-    bosscontribution = st.number_input('Input Employer Contribution (21/Single): ')
+    if choice is not 'Custom':
+        bosscontribution = st.number_input('Input Employer Contribution (21/Single): ')
 
     if bosscontribution > 0:
         Zip_to_County = Zip_to_County.drop_duplicates(subset = ['Zip Code'], ignore_index= True)
